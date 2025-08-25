@@ -43,7 +43,6 @@ next-env.d.ts
 Thumbs.db
 
 # Memory Bank and Project-specific files (exclude from public repo)
-memory-bank/
 .roo/
 docs/
 

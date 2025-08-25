@@ -2,6 +2,7 @@
 // Manages tool metadata, registration, and runtime operations
 
 import { UsageStorage } from './storage'
+import { createToolSearcher, FuzzyMatch } from './fuzzy-search'
 
 export enum ToolCategory {
   PRODUCTIVITY = 'productivity',
@@ -74,6 +75,7 @@ export function fromPersistedTool(persisted: PersistedTool): Tool {
 export class ToolRegistry {
   private tools: Map<string, Tool> = new Map()
   private initialized = false
+  private fuzzySearcher = createToolSearcher()
 
   /**
    * Initialize registry with default tools and load from storage
@@ -165,15 +167,30 @@ export class ToolRegistry {
   }
 
   /**
-   * Search tools by name, description, or tags
+   * Search tools by name, description, or tags (exact matching)
    */
   search(query: string): Tool[] {
     const lowerQuery = query.toLowerCase()
-    return this.getAll().filter(tool => 
+    return this.getAll().filter(tool =>
       tool.name.toLowerCase().includes(lowerQuery) ||
       tool.description.toLowerCase().includes(lowerQuery) ||
       tool.tags.some(tag => tag.toLowerCase().includes(lowerQuery))
     )
+  }
+
+  /**
+   * Fuzzy search tools with scoring and match highlighting
+   */
+  fuzzySearch(query: string): FuzzyMatch[] {
+    const tools = this.getAll()
+    return this.fuzzySearcher.search(query, tools)
+  }
+
+  /**
+   * Get fuzzy search results as Tool array (for backward compatibility)
+   */
+  fuzzySearchTools(query: string): Tool[] {
+    return this.fuzzySearch(query).map(match => match.item)
   }
 
   /**
@@ -224,9 +241,10 @@ export class ToolRegistry {
   getFiltered(options: {
     category?: ToolCategory | 'all'
     search?: string
-    sortBy?: 'name' | 'usage' | 'recent' | 'created'
+    sortBy?: 'name' | 'usage' | 'recent' | 'created' | 'relevance'
     sortOrder?: 'asc' | 'desc'
     favoritesFirst?: boolean
+    useFuzzySearch?: boolean
   } = {}): Tool[] {
     let filtered = this.getAll()
 
@@ -237,7 +255,24 @@ export class ToolRegistry {
 
     // Filter by search
     if (options.search) {
-      filtered = this.search(options.search)
+      if (options.useFuzzySearch) {
+        // Use fuzzy search and maintain relevance order
+        const fuzzyResults = this.fuzzySearch(options.search)
+        const categoryFiltered = options.category && options.category !== 'all'
+          ? fuzzyResults.filter(match => match.item.category === options.category)
+          : fuzzyResults
+        
+        if (options.sortBy === 'relevance' || !options.sortBy) {
+          return categoryFiltered.map(match => match.item)
+        }
+        
+        filtered = categoryFiltered.map(match => match.item)
+      } else {
+        filtered = this.search(options.search)
+        if (options.category && options.category !== 'all') {
+          filtered = filtered.filter(tool => tool.category === options.category)
+        }
+      }
     }
 
     // Sort favorites first if requested
@@ -249,31 +284,57 @@ export class ToolRegistry {
       })
     }
 
-    // Apply sorting
-    const sortOrder = options.sortOrder === 'desc' ? -1 : 1
-    
-    switch (options.sortBy) {
-      case 'usage':
-        filtered.sort((a, b) => (b.usageCount - a.usageCount) * sortOrder)
-        break
-      case 'recent':
-        filtered.sort((a, b) => {
-          if (!a.lastUsed && !b.lastUsed) return 0
-          if (!a.lastUsed) return 1 * sortOrder
-          if (!b.lastUsed) return -1 * sortOrder
-          return (b.lastUsed.getTime() - a.lastUsed.getTime()) * sortOrder
-        })
-        break
-      case 'created':
-        filtered.sort((a, b) => (b.createdAt.getTime() - a.createdAt.getTime()) * sortOrder)
-        break
-      case 'name':
-      default:
-        filtered.sort((a, b) => a.name.localeCompare(b.name) * sortOrder)
-        break
+    // Apply sorting (skip if using fuzzy search with relevance sorting)
+    if (!(options.useFuzzySearch && options.search && (options.sortBy === 'relevance' || !options.sortBy))) {
+      const sortOrder = options.sortOrder === 'desc' ? -1 : 1
+      
+      switch (options.sortBy) {
+        case 'usage':
+          filtered.sort((a, b) => (b.usageCount - a.usageCount) * sortOrder)
+          break
+        case 'recent':
+          filtered.sort((a, b) => {
+            if (!a.lastUsed && !b.lastUsed) return 0
+            if (!a.lastUsed) return 1 * sortOrder
+            if (!b.lastUsed) return -1 * sortOrder
+            return (b.lastUsed.getTime() - a.lastUsed.getTime()) * sortOrder
+          })
+          break
+        case 'created':
+          filtered.sort((a, b) => (b.createdAt.getTime() - a.createdAt.getTime()) * sortOrder)
+          break
+        case 'name':
+        default:
+          filtered.sort((a, b) => a.name.localeCompare(b.name) * sortOrder)
+          break
+      }
     }
 
     return filtered
+  }
+
+  /**
+   * Get filtered tools with fuzzy search results for highlighting
+   */
+  getFilteredWithMatches(options: {
+    category?: ToolCategory | 'all'
+    search?: string
+    sortBy?: 'name' | 'usage' | 'recent' | 'created' | 'relevance'
+    sortOrder?: 'asc' | 'desc'
+    favoritesFirst?: boolean
+    useFuzzySearch?: boolean
+  } = {}): { tools: Tool[], matches: Map<string, FuzzyMatch> } {
+    const matchesMap = new Map<string, FuzzyMatch>()
+    
+    if (options.search && options.useFuzzySearch) {
+      const fuzzyResults = this.fuzzySearch(options.search)
+      fuzzyResults.forEach(match => {
+        matchesMap.set(match.item.id, match)
+      })
+    }
+    
+    const tools = this.getFiltered(options)
+    return { tools, matches: matchesMap }
   }
 
   /**
