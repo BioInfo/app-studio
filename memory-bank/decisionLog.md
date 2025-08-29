@@ -123,3 +123,20 @@ This file records architectural and implementation decisions using a list format
   - Testing framework with assertions, mocking, DOM testing, and performance measurement
   - All systems integrate with existing localStorage persistence and follow established patterns
 - Rationale: Provides enterprise-grade capabilities while maintaining local-first architecture and following established patterns. Significantly enhances user experience, productivity, and system reliability with comprehensive automation, monitoring, and support features.
+[2025-08-28 20:41:00] - Enhanced Smart Markdown Formatter with bidirectional conversion capabilities
+- Decision: Implemented bidirectional conversion functionality for Smart Markdown Formatter to support both Text→Markdown and Markdown→Rich Text modes
+- Implementation Details:
+  - Added ConversionMode type with 'text-to-markdown' and 'markdown-to-rich-text' options
+  - Created comprehensive markdownToRichHtml function with enhanced HTML rendering
+  - Implemented mode toggle UI with visual indicators and smooth transitions
+  - Enhanced copy functionality to support both plain text and rich HTML clipboard formats
+  - Updated input/output sections to dynamically adapt based on selected mode
+  - Added comprehensive markdown parsing with support for headers, lists, code blocks, blockquotes, tables, links, images, and text formatting
+- Technical Features:
+  - Rich HTML output with proper styling classes for professional appearance
+  - Clipboard API integration for copying both HTML and plain text formats
+  - Dynamic placeholder text and UI labels based on conversion mode
+  - Enhanced preview rendering with mode-specific formatting
+  - Fallback copy mechanism for browsers with limited clipboard support
+  - Responsive design maintaining existing accessibility and dark mode support
+- Rationale: Provides comprehensive bidirectional markdown conversion capabilities, enabling users to both create markdown from plain text and generate rich formatted text from markdown for use in documents, emails, and presentations. Maintains local-first architecture and follows established component patterns.
