@@ -68,6 +68,14 @@ Validate email lists with Outlook-specific rules:
 - Export results in CSV/TXT formats
 - Disposable email detection
 
+#### ⚡ Internet Speed Test
+Measure your internet connection performance:
+- Download, upload, and ping speed tests
+- Visual progress indicators during testing
+- Test results history with timestamps
+- Results stored locally with export capability
+- Real-time speed calculations in Mbps
+
 ## 🚀 Quick Start
 
 ### Prerequisites

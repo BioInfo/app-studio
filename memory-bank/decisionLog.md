@@ -139,4 +139,75 @@ This file records architectural and implementation decisions using a list format
   - Enhanced preview rendering with mode-specific formatting
   - Fallback copy mechanism for browsers with limited clipboard support
   - Responsive design maintaining existing accessibility and dark mode support
+[2025-09-05 20:48:00] - Implemented Internet Speed Test tool: Ping, download/upload measurement, results history with localStorage persistence. Directly client-side using public endpoints for testing.
 - Rationale: Provides comprehensive bidirectional markdown conversion capabilities, enabling users to both create markdown from plain text and generate rich formatted text from markdown for use in documents, emails, and presentations. Maintains local-first architecture and follows established component patterns.
+[2025-09-05 20:56:00] - Implemented Internet Speed Test tool with comprehensive client-side testing capabilities
+- Decision: Created full-featured Internet Speed Test tool using client-side techniques for ping, download, and upload measurements
+- Implementation Details:
+  - Built InternetSpeedTest component (src/components/tools/InternetSpeedTest.tsx) with real-time testing capabilities
+  - Created route page (src/app/tools/speed-test/page.tsx) with proper usage tracking integration
+  - Implemented ping testing using image loading technique with multiple iterations for accuracy
+  - Added download speed testing using fetch API with concurrent connections to reliable test endpoints
+  - Built upload speed testing using POST requests with generated test data
+  - Integrated localStorage persistence for test results history (max 50 results with schema versioning)
+  - Added comprehensive UI with progress tracking, error handling, and test history management
+  - Included responsive design with dark mode support following established design patterns
+- Technical Features:
+  - Client-side speed testing without external dependencies or server requirements
+  - Real-time progress indicators during each test phase (ping, download, upload)
+  - Test result persistence with timestamps and status tracking (completed/partial/failed)
+  - History management with clear functionality and formatted result display
+  - Error handling with user-friendly messages and graceful degradation
+  - Responsive design with proper accessibility support and keyboard navigation
+  - Integration with existing tool registry and usage tracking systems
+- Rationale: Provides essential network diagnostic capabilities while maintaining local-first architecture. Uses reliable public endpoints for testing and follows established component patterns for seamless integration.
+[2025-09-05 21:00:00] - Updated Internet Speed Test design to match established App Studio patterns
+- Decision: Redesigned Internet Speed Test component to follow consistent design patterns used across all other tools
+- Implementation Details:
+  - Updated layout to use full-screen gradient background (orange-to-red theme matching tool's purpose)
+  - Added proper header with back button and centered title/description following established pattern
+  - Restructured UI into white rounded cards with shadow for consistent visual hierarchy
+  - Implemented three-section layout: Test Controls, Test Results, and Test History
+  - Updated typography, spacing, and button styling to match other tools (ColorPicker, TextCleaner, SmartMarkdownFormatter)
+  - Maintained all existing functionality while improving visual consistency
+  - Removed dark mode classes to match other tools' approach (handled at app level)
+- Visual Improvements:
+  - Consistent gradient background with orange/red theme appropriate for speed/performance tool
+  - White rounded cards with proper shadow and spacing
+  - Improved button styling with hover states and transitions
+  - Better visual hierarchy with proper section headers
+  - Consistent color scheme using orange primary, green for download, blue for upload
+  - Proper spacing and typography matching established design system
+- Rationale: Ensures visual consistency across all App Studio tools, providing users with familiar interface patterns and improving overall user experience. Maintains all technical functionality while significantly improving design cohesion.
+
+[2025-09-06 14:27:56] - Implemented Password Generator tool (generator only, no manager features)
+- Decision: Add Password Generator as a new utility tool to App Studio, focusing solely on client-side password generation with customizable options and strength analysis. No storage of generated passwords to prioritize privacy and security; persist only user preferences (default settings) in localStorage.
+- Rationale: Enhances productivity by providing a secure, offline password creation tool that aligns with local-first principles. Avoids duplication with existing tools, fits Utility category, and follows AGENTS.md integration patterns for seamless dashboard inclusion. User-specified to exclude manager aspects initially, allowing future extension.
+- Implementation Details:
+  - Registry: Add entry to src/data/tools.ts with id: 'password-generator', name: 'Password Generator', category: ToolCategory.Utility, icon: 'Key', path: '/tools/password-generator', green/emerald theme.
+  - Route: Create src/app/tools/password-generator/page.tsx ('use client') importing component and calling toolRegistry.recordUsage('password-generator') on mount.
+  - Component: src/components/tools/PasswordGenerator.tsx ('use client') with useState for form inputs (length: 8-128, includeUppercase: true, includeLowercase: true, includeNumbers: true, includeSymbols: true), generated password, and strength score. useEffect to load/save preferences from localStorage key 'tool-password-generator-data' with __schemaVersion: 1, including {prefs: {length, includeUppercase, etc.}, lastModified}.
+  - Generation: Button triggers function using crypto.getRandomValues() to create secure random string based on selected char sets; compute entropy-based strength (0-100 score) with color-coded feedback (red/weak to green/strong).
+  - UI: Follow AGENTS.md template - min-h-screen bg-gradient-to-br from-green-50 to-emerald-100; header with ArrowLeft back button, title with Key icon; white card sections for Options form, Generated Password display with copy button (navigator.clipboard.writeText), Strength meter (progress bar), Recent generations list (non-persistent, cleared on refresh for privacy).
+  - Features: Real-time preview as user adjusts options; copy success toast; error handling for crypto unavailable; responsive with Tailwind, accessible with labels/ARIA.
+  - Testing: Unit test generation logic and storage in src/components/tools/PasswordGenerator.test.tsx; integration for route/component rendering.
+  - Documentation: Update README.md Built-in Tools section; Memory Bank updates for progress/decision.
+  [2025-09-06 15:05:00] - Implemented Calculator tool for App Studio with natural language processing
+  - Decision: Add Calculator tool based on awesome-macos analysis, inspired by Numi calculator with local-first architecture
+  - Rationale: Fills the gap for math calculations in productivity tools; supports percentages, constants, power operations; enhances user productivity for quick calculations; aligns with local-first principles using safe client-side evaluation
+  - Implementation Details:
+    - Registry: Add entry to src/data/tools.ts with id: 'calculator', name: 'Calculator', category: ToolCategory.UTILITIES, icon: 'Hash', path: '/tools/calculator', orange/yellow theme
+    - Route: Create src/app/tools/calculator/page.tsx ('use client') with usage tracking
+    - Component: src/components/tools/Calculator.tsx with natural language expression parsing, history, clipboard copy
+    - Features: Support for arithmetic (+,-,*,/,^), percentages (50%), constants (π, e), functions (sqrt), history persistence in localStorage
+    - UI: Yellow/orange gradient theme (from-yellow-50 to-orange-100), dual-pane layout (calculator/history), responsive design
+    - Safety: Uses Function() constructor within try-catch for expression evaluation with input sanitization
+  - Technical Features:
+    - Expression parsing with percentage handling, power notation (^), constants (π, e)
+    - Real-time calculation on Enter key or button click
+    - Calculation history with timestamp, scrollable list, clear functionality
+    - Clipboard support for copying results
+    - Error handling with user-friendly messages for invalid expressions
+    - localStorage persistence with schema versioning (__schemaVersion: 1)
+    - Responsive two-column layout on lg+ screens, stacked on mobile
+  - Rationale: Provides essential mathematical computing capabilities while maintaining local-first architecture and following established AGENTS.md patterns for visual consistency and integration

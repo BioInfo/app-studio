@@ -108,6 +108,51 @@ export const DEFAULT_TOOLS: Tool[] = [
     createdAt: new Date('2025-08-25T12:51:00.000Z'),
     version: '1.0.0',
     isEnabled: true
+  },
+  {
+    id: 'speed-test',
+    name: 'Internet Speed Test',
+    description: 'Test your internet connection speed with download, upload, and ping measurements. Save and track your speed test results over time.',
+    category: ToolCategory.UTILITIES,
+    icon: 'Zap',
+    path: '/tools/speed-test',
+    usageCount: 0,
+    lastUsed: null,
+    isFavorite: false,
+    tags: ['speed', 'internet', 'download', 'upload', 'ping', 'network', 'performance'],
+    createdAt: new Date('2025-09-05T16:45:00.000Z'),
+    version: '1.0.0',
+    isEnabled: true
+  },
+  {
+    id: 'password-generator',
+    name: 'Password Generator',
+    description: 'Generate secure, customizable passwords offline with strength analysis.',
+    category: ToolCategory.UTILITIES,
+    icon: 'Key',
+    path: '/tools/password-generator',
+    usageCount: 0,
+    lastUsed: null,
+    isFavorite: false,
+    tags: ['password', 'security', 'generator', 'strength', 'offline'],
+    createdAt: new Date('2025-09-06T14:28:00.000Z'),
+    version: '1.0.0',
+    isEnabled: true
+  },
+  {
+    id: 'calculator',
+    name: 'Calculator',
+    description: 'Natural language calculator for quick math problems, expressions, and calculations.',
+    category: ToolCategory.UTILITIES,
+    icon: 'Hash',
+    path: '/tools/calculator',
+    usageCount: 0,
+    lastUsed: null,
+    isFavorite: false,
+    tags: ['calculator', 'math', 'computation', 'expressions', 'natural language'],
+    createdAt: new Date('2025-09-06T15:04:00.000Z'),
+    version: '1.0.0',
+    isEnabled: true
   }
   // Additional tools will be added here as they are developed
 ]
